@@ -1,21 +1,21 @@
 ﻿namespace Albatross.Collections.Intervals {
-	public interface IClosedInterval<T> where T : IComparable<T> {
-		T StartInclusive { get; set; }
-		T EndInclusive { get; set; }
-		T Next(T value);
-		T Previous(T value);
+	public interface IClosedInterval<K> where K : IComparable<K> {
+		K StartInclusive { get; set; }
+		K EndInclusive { get; set; }
+		K Next(K value);
+		K Previous(K value);
 	}
 
-	public abstract class ClosedInterval<T, V> : IClosedInterval<T> where T : IComparable<T> where V : ICloneable, IEquatable<V> {
-		public ClosedInterval(T startInclusive, T endInclusive) {
+	public abstract class ClosedInterval<K, V> : IClosedInterval<K> where K : IComparable<K> where V : ICloneable, IEquatable<V> {
+		public ClosedInterval(K startInclusive, K endInclusive) {
 			StartInclusive = startInclusive;
 			EndInclusive = endInclusive;
 		}
 
-		public T StartInclusive { get; set; }
-		public T EndInclusive { get; set; }
-		public abstract T Next(T value);
-		public abstract T Previous(T value);
+		public K StartInclusive { get; set; }
+		public K EndInclusive { get; set; }
+		public abstract K Next(K value);
+		public abstract K Previous(K value);
 		public V? Value { get; set; }
 	}
 }
