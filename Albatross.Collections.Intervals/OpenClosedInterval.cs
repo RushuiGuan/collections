@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Albatross.Collections.Intervals {
+﻿namespace Albatross.Collections.Intervals {
 	public interface IOpenClosedInterval<T> where T : IComparable<T> {
 		T StartInclusive { get; set; }
 		T EndExclusive { get; set; }

@@ -1,5 +1,3 @@
-using Albatross.Collections.IntervalSet;
-
 namespace Albatross.Collections.Intervals {
 	public static class ClosedIntervalExtensions {
 		public static bool IsValid<T>(this IClosedInterval<T> interval) where T : IComparable<T> {
@@ -17,7 +15,7 @@ namespace Albatross.Collections.Intervals {
 		/// <param name="clone"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentException"></exception>
-		public static IEnumerable<T> ContinuousSegments<T, K>(this IEnumerable<T> series, T src, Func<T, T, bool> isEqual, Func<T, T> clone)
+		public static IEnumerable<T> Insert<T, K>(this IEnumerable<T> series, T src, Func<T, T, bool> isEqual, Func<T, T> clone)
 			where T : IClosedInterval<K> where K : IComparable<K> {
 
 			if (src.StartInclusive.CompareTo(src.EndInclusive) > 0) { throw new ArgumentException("Start date cannot be greater than end date"); }
@@ -40,10 +38,10 @@ namespace Albatross.Collections.Intervals {
 						src = item;
 					} else {
 						var after = clone(item);
-						after.StartInclusive = src.Next(src.EndInclusive);
+						after.StartInclusive = T.Next(src.EndInclusive);
 						// note that item.EndInclusive is modified.  therefore after.EndInclusive should be set first.
 						after.EndInclusive = item.EndInclusive;
-						item.EndInclusive = src.Previous(src.StartInclusive);
+						item.EndInclusive = T.Previous(src.StartInclusive);
 						yield return item;
 						yield return after;
 					}
@@ -54,7 +52,7 @@ namespace Albatross.Collections.Intervals {
 						item.StartInclusive = src.StartInclusive;
 						src = item;
 					} else {
-						item.StartInclusive = src.Next(src.EndInclusive);
+						item.StartInclusive = T.Next(src.EndInclusive);
 						yield return item;
 					}
 				} else if (item.StartInclusive.CompareTo(src.StartInclusive) < 0 && src.StartInclusive.CompareTo(item.EndInclusive) <= 0 && item.EndInclusive.CompareTo(src.EndInclusive) <= 0) {
@@ -63,10 +61,10 @@ namespace Albatross.Collections.Intervals {
 						item.EndInclusive = src.EndInclusive;
 						src = item;
 					} else {
-						item.EndInclusive = src.Previous(src.StartInclusive);
+						item.EndInclusive = T.Previous(src.StartInclusive);
 						yield return item;
 					}
-				} else if (src.EndInclusive.CompareTo(item.Previous(item.StartInclusive)) == 0) {
+				} else if (src.EndInclusive.CompareTo(T.Previous(item.StartInclusive)) == 0) {
 					isContinuous = true;
 					if (isEqual(src, item)) {
 						item.StartInclusive = src.StartInclusive;
@@ -74,7 +72,7 @@ namespace Albatross.Collections.Intervals {
 					} else {
 						yield return item;
 					}
-				} else if (src.StartInclusive.CompareTo(item.Next(item.EndInclusive)) == 0) {
+				} else if (src.StartInclusive.CompareTo(T.Next(item.EndInclusive)) == 0) {
 					isContinuous = true;
 					if (isEqual(src, item)) {
 						item.EndInclusive = src.EndInclusive;
@@ -107,7 +105,7 @@ namespace Albatross.Collections.Intervals {
 		/// <param name="start"></param>
 		/// <param name="endDate"></param>
 		/// <exception cref="ArgumentException"></exception>
-		public static void UpdateDateLevel<T, K>(this ICollection<T> series, Action<T> modify, Func<T, T> clone, K start, K end)
+		public static void Update<T, K>(this ICollection<T> series, Action<T> modify, Func<T, T> clone, K start, K end)
 			where T : IClosedInterval<K> where K : IComparable<K> {
 			if (start.CompareTo(end) > 0) {
 				throw new ArgumentException("Start date cannot be greater than end date");
@@ -122,7 +120,7 @@ namespace Albatross.Collections.Intervals {
 				} else if (current.StartInclusive.CompareTo(start) < 0 && end.CompareTo(current.EndInclusive) < 0) {
 					// current overlap new value
 					var after = clone(current);
-					after.StartInclusive = after.Next(end);
+					after.StartInclusive = T.Next(end);
 					after.EndInclusive = current.EndInclusive;
 					series.Add(after);
 
@@ -132,21 +130,21 @@ namespace Albatross.Collections.Intervals {
 					newItem.EndInclusive = end;
 					series.Add(newItem);
 
-					current.EndInclusive = current.Previous(start);
+					current.EndInclusive = T.Previous(start);
 				} else if (start.CompareTo(current.StartInclusive) <= 0 && current.StartInclusive.CompareTo(end) <= 0 && end.CompareTo(current.EndInclusive) < 0) {
 					var newItem = clone(current);
 					modify(newItem);
 					newItem.StartInclusive = current.StartInclusive;
 					newItem.EndInclusive = end;
 					series.Add(newItem);
-					current.StartInclusive = current.Next(end);
+					current.StartInclusive = T.Next(end);
 				} else if (current.StartInclusive.CompareTo(start) < 0 && start.CompareTo(current.EndInclusive) <= 0 && end.CompareTo(current.EndInclusive) >= 0) {
 					var newItem = clone(current);
 					modify(newItem);
 					newItem.StartInclusive = start;
 					newItem.EndInclusive = current.EndInclusive;
 					series.Add(newItem);
-					current.EndInclusive = current.Previous(start);
+					current.EndInclusive = T.Previous(start);
 				}
 			}
 		}
@@ -182,12 +180,11 @@ namespace Albatross.Collections.Intervals {
 				yield return item;
 			}
 		}
-
-		public static IEnumerable<T> RebuildDateLevelSeries<T, K>(this IEnumerable<T> source, Func<T, T, bool> isEqual)
+		public static IEnumerable<T> Rebuild<T, K>(this IEnumerable<T> source, Func<T, T, bool> isEqual)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
 			var items = source.OrderBy(x => x.StartInclusive).ToArray();
-			T? current = null;
+			T? current = default;
 			foreach (var item in items) {
 				if (current == null) {
 					current = item;
@@ -195,8 +192,9 @@ namespace Albatross.Collections.Intervals {
 					if (isEqual(current, item)) {
 						current.EndInclusive = item.EndInclusive;
 					} else {
-						current.EndInclusive = item.Previous(item.StartInclusive);
-						yield return current;
+						current.EndInclusive = T.Previous(item.StartInclusive);
+						var result = current;
+						yield return result;
 					}
 				}
 			}
@@ -207,7 +205,7 @@ namespace Albatross.Collections.Intervals {
 
 		public static T? Find<T, K>(this IEnumerable<T> items, K key) where T : IClosedInterval<K> where K : IComparable<K> {
 			foreach (var item in items) {
-				if (item.StartInclusive.CompareTo(key) <= 0 && item.EndInclusive.CompareTo(key) >= 0) {
+				if (key.IsBetweenInclusive(item.StartInclusive, item.EndInclusive)) {
 					return item;
 				}
 			}
@@ -216,29 +214,30 @@ namespace Albatross.Collections.Intervals {
 
 		public static IEnumerable<T> Find<T, K>(this IEnumerable<T> source, K start, K end)
 			where T : IClosedInterval<K> where K : IComparable<K> {
-			return source.Where(args => !(start.CompareTo(args.EndInclusive) > 0 || end.CompareTo(args.StartInclusive) < 0));
+			return source.Where(args => !(start.IsGreaterThan(args.EndInclusive) || end.IsLessThan(args.StartInclusive)));
+			//return source.Where(args => !(start.CompareTo(args.EndInclusive) > 0 || end.CompareTo(args.StartInclusive) < 0));
 		}
-		public static bool VerifySeries<T, K>(this IEnumerable<T> series, bool throwException)
+		public static bool Verify<T, K>(this IEnumerable<T> series, bool throwException)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
-			T? previous = null;
+			T? previous = default;
 			foreach (var item in series.OrderBy(x => x.StartInclusive)) {
-				if (item.StartInclusive > item.EndInclusive) {
+				if (item.StartInclusive.IsGreaterThan(item.EndInclusive)) {
 					if (throwException) {
-						throw new IntervalException(item, $"Start date is greater than end date");
+						throw new IntervalException($"Start date is greater than end date");
 					} else {
 						return false;
 					}
 				} else if (previous != null) {
-					if (previous.EndInclusive >= item.StartInclusive) {
+					if (previous.EndInclusive.IsGreaterThanOrEqualTo(item.StartInclusive)) {
 						if (throwException) {
-							throw new IntervalException(item, $"Start date overlaps with previous end date");
+							throw new IntervalException($"Start date overlaps with previous end date");
 						} else {
 							return false;
 						}
-					} else if (previous.EndInclusive.AddDays(1) < item.StartInclusive) {
+					} else if (T.Previous(previous.EndInclusive).IsLessThan(item.StartInclusive)) {
 						if (throwException) {
-							throw new IntervalException(item, $"Start date is not continuous from previous end date");
+							throw new IntervalException($"Start date is not continuous from previous end date");
 						} else {
 							return false;
 						}

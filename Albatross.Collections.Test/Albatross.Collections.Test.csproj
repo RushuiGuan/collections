@@ -21,6 +21,7 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\Albatross.Collections.Intervals\Albatross.Collections.Intervals.csproj" />
 		<ProjectReference Include="..\Albatross.Collections\Albatross.Collections.csproj" />
 	</ItemGroup>
 </Project>
