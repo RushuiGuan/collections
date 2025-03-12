@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Albatross.Collections.Intervals", "Albatross.Collections.Intervals\Albatross.Collections.Intervals.csproj", "{03F06FB2-D279-4DE8-A614-97C6FB825AA9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Albatross.Collections.Intervals.Test", "Albatross.Collections.Intervals.Test\Albatross.Collections.Intervals.Test.csproj", "{5A12C083-2B67-43D5-A0F3-B2505A86AFCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,10 @@ Global
 		{03F06FB2-D279-4DE8-A614-97C6FB825AA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03F06FB2-D279-4DE8-A614-97C6FB825AA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03F06FB2-D279-4DE8-A614-97C6FB825AA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A12C083-2B67-43D5-A0F3-B2505A86AFCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A12C083-2B67-43D5-A0F3-B2505A86AFCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A12C083-2B67-43D5-A0F3-B2505A86AFCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A12C083-2B67-43D5-A0F3-B2505A86AFCA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

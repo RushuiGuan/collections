@@ -1,6 +1,10 @@
-﻿using Albatross.Testing;
+﻿using Albatross.Text;
+using Albatross.Testing;
 using FluentAssertions;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Text;
 using Xunit;
 
 namespace Albatross.Collections.Test {
@@ -45,6 +49,32 @@ namespace Albatross.Collections.Test {
 			var removed = list.RemoveAny_WithNewList(x => x == 4 || x == 5);
 			list.AsString().Should().Be("1,2,3");
 			removed.AsString().Should().Be("4,5");
+		}
+
+		[Theory]
+		[InlineData("1-10", 1)]
+		[InlineData("1-10", 2)]
+		[InlineData("1-10", 3)]
+		[InlineData("1-10", 4)]
+		[InlineData("1-10", 5)]
+		[InlineData("1-10", 6)]
+		[InlineData("1-10", 7)]
+		[InlineData("1-10", 8)]
+		[InlineData("1-10", 9)]
+		[InlineData("1-10", 10)]
+		[InlineData("1-10", 11)]
+		[InlineData("1-10", 12)]
+		[InlineData("1-10", 13)]
+		public void TestBatch(string arrayText, int size) {
+			var array = arrayText.IntArray();
+			var result = new StringWriter();
+			var batches = array.Batch(size).ToArray();
+			result.WriteItems(batches, ".", (w, items) => w.WriteItems(items, "."));
+
+			var expected = new StringWriter();
+			expected.WriteItems(array, ".", null);
+			
+			Assert.Equal(expected.ToString(), result.ToString());
 		}
 	}
 }

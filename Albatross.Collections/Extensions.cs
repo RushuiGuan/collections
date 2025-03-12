@@ -5,6 +5,25 @@ using System.Linq;
 
 namespace Albatross.Collections {
 	public static class Extensions {
+		public static IEnumerable<T[]> Batch<T>(this IEnumerable<T> items, int size) {
+			if (size == 0) { throw new ArgumentException("Batch size cannot be 0"); }
+			var array = new T[size];
+			int index = 0;
+			foreach (var item in items) {
+				array[index] = item;
+				index++;
+				if (index == size) {
+					yield return array;
+					array = new T[size];
+					index = 0;
+				}
+			}
+			if (index != 0) {
+				yield return array[0..index];
+			}
+		}
+
+
 		public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> items) {
 			foreach (var item in items) {
 				collection.Add(item);

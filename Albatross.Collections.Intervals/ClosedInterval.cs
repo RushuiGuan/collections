@@ -8,7 +8,7 @@
 
 	public interface IClosedInterval<K, V> : IClosedInterval<K> 
 		where K : IComparable<K> 
-		where V : ICloneable, IEquatable<V> {
+		where V : IEquatable<V> {
 		V? Value { get; set; }
 	}
 }
