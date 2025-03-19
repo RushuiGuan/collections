@@ -1,4 +1,4 @@
-# Albatross.Collections.Intervals
+# About
 An utility library for management of Continuous and non overlapping intervals.
 
 ## Overview
