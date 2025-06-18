@@ -24,7 +24,7 @@ namespace Albatross.Collections.Intervals.Test {
 		}
 		public static IEnumerable<DateInterval<int>> CreateRandomSeries(DateOnly seriesStart, DateOnly seriesEnd, Dictionary<DateOnly, int> dict) {
 			DateOnly start, end;
-			for(start = seriesStart, end = seriesStart.AddDays(Random.Shared.Next(0, 10)); end <= seriesEnd; start = end.AddDays(1), end = start.AddDays(Random.Shared.Next(0, 10))) {
+			for (start = seriesStart, end = seriesStart.AddDays(Random.Shared.Next(0, 10)); end <= seriesEnd; start = end.AddDays(1), end = start.AddDays(Random.Shared.Next(0, 10))) {
 				var value = Random.Shared.Next(1, 100);
 				var item = new DateInterval<int>(start, end, value);
 				yield return item;
@@ -70,7 +70,7 @@ namespace Albatross.Collections.Intervals.Test {
 		public List<DateInterval<int>> Results { get; private set; }
 
 		public List<DateInterval<int>> Run() {
-			Results = List.Insert(SourceItem).OrderBy(x => x.StartInclusive).ToList();
+			Results = List.Insert(SourceItem, x => x).OrderBy(x => x.StartInclusive).ToList();
 			return Results;
 		}
 	}

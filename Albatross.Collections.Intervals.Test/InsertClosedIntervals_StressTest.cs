@@ -51,9 +51,9 @@ namespace Albatross.Collections.Intervals.Test {
 				}
 
 				if (end < seriesStart.AddDays(-1) || start > seriesEnd.AddDays(1)) {
-					Assert.Throws<ArgumentException>(() => series.Insert(source).ToArray());
+					Assert.Throws<ArgumentException>(() => series.Insert(source, x => x).ToArray());
 				} else {
-					var results = series.Insert(source).OrderBy(x => x.StartInclusive).ToArray();
+					var results = series.Insert(source, x => x).OrderBy(x => x.StartInclusive).ToArray();
 					foreach (var item in results) {
 						for (var date = item.StartInclusive; date <= item.EndInclusive; date = date.AddDays(1)) {
 							item.Value.Should().Be(dict[date]);

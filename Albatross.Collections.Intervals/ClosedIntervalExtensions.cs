@@ -195,6 +195,7 @@ namespace Albatross.Collections.Intervals {
 						current.EndInclusive = T.Previous(item.StartInclusive);
 						var result = current;
 						yield return result;
+						current = item;
 					}
 				}
 			}
@@ -217,6 +218,15 @@ namespace Albatross.Collections.Intervals {
 			return source.Where(args => !(start.IsGreaterThan(args.EndInclusive) || end.IsLessThan(args.StartInclusive)));
 			//return source.Where(args => !(start.CompareTo(args.EndInclusive) > 0 || end.CompareTo(args.StartInclusive) < 0));
 		}
+		/// <summary>
+		/// Verify that the series is continuous and non-overlapping.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="K"></typeparam>
+		/// <param name="series"></param>
+		/// <param name="throwException"></param>
+		/// <returns></returns>
+		/// <exception cref="IntervalException"></exception>
 		public static bool Verify<T, K>(this IEnumerable<T> series, bool throwException)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
@@ -235,7 +245,7 @@ namespace Albatross.Collections.Intervals {
 						} else {
 							return false;
 						}
-					} else if (T.Previous(previous.EndInclusive).IsLessThan(item.StartInclusive)) {
+					} else if (T.Next(previous.EndInclusive).IsLessThan(item.StartInclusive)) {
 						if (throwException) {
 							throw new IntervalException($"Start date is not continuous from previous end date");
 						} else {

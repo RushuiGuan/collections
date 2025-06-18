@@ -8,13 +8,13 @@ namespace Albatross.Collections.Intervals.Test {
 		public void InvalidDates() {
 			var list = new List<DateInterval<int>>();
 			var src = new DateInterval<int>(DateOnlyValues.Mar1_2022, DateOnlyValues.Feb1_2022, 100);
-			Assert.Throws<ArgumentException>(() => list.Insert(src).ToArray());
+			Assert.Throws<ArgumentException>(() => list.Insert(src, x => x).ToArray());
 		}
 
 		[Fact]
 		public void EmptyCollection() {
 			var list = new List<DateInterval<int>>();
-			var result = list.Insert(new DateInterval<int>(DateOnlyValues.Mar1_2022, DateOnlyValues.Mar31_2022, 100)).ToArray();
+			var result = list.Insert(new DateInterval<int>(DateOnlyValues.Mar1_2022, DateOnlyValues.Mar31_2022, 100), x => x).ToArray();
 
 			Assert.Collection(result,
 				args => {
