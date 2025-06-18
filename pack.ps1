@@ -110,10 +110,10 @@ try {
 			Remove-Item $tmp -Force
 		}
 	}
-	devtools set-project-version -d $root -ver $oldVersion
+	devtools project set-version -d $root -ver $oldVersion
 	if ($tag -and $projects.Length -ne 0) {
 		$directoryName = Split-Path $root -Leaf
-		$version = devtools build-version -ver $version -clear-meta
+		$version = devtools version build -ver $version -clear-meta
 		if ($LASTEXITCODE -ne 0) {
 			Write-Error "Error removing meta from version";
 		}
