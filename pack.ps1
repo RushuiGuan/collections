@@ -81,7 +81,7 @@ try {
 	Write-Information "Version: $version";
 	devtools project set-version -d $root -ver $version
 	
-	$repositoryProjectRoot = devtools read-project-property -f $PSScriptRoot\Directory.Build.props -p RepositoryUrl
+	$repositoryProjectRoot = devtools project read-property -f $PSScriptRoot\Directory.Build.props -p RepositoryUrl
 	if ($LASTEXITCODE -ne 0) {
 		Write-Error "Unable to read RepositoryUrl from the Directory.Build.props file";
 	} else {
@@ -139,7 +139,7 @@ try {
 	}
 }
 finally {
-	devtools format-xml -f $root\Directory.Build.props
+	devtools xml format -f $root\Directory.Build.props
 	Get-ChildItem $root\*.csproj -recurse | ForEach-Object { 
 		devtools xml format -f $_.FullName
 	}
