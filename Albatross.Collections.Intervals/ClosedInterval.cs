@@ -2,8 +2,8 @@
 	public interface IClosedInterval<K> where K : IComparable<K> {
 		K StartInclusive { get; set; }
 		K EndInclusive { get; set; }
-		abstract static K Next(K value);
-		abstract static K Previous(K value);
+		static abstract K Next(K value);
+		static abstract K Previous(K value);
 	}
 
 	public interface IClosedInterval<K, V> : IClosedInterval<K> 

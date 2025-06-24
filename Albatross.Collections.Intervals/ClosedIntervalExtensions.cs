@@ -1,8 +1,12 @@
+using Microsoft.VisualBasic;
+using System.Diagnostics.CodeAnalysis;
+
 namespace Albatross.Collections.Intervals {
 	public static class ClosedIntervalExtensions {
 		public static bool IsValid<T>(this IClosedInterval<T> interval) where T : IComparable<T> {
 			return interval.StartInclusive.CompareTo(interval.EndInclusive) <= 0;
 		}
+
 		/// <summary>
 		/// Use the method to create a continuous series of non overlapping interval data.  The input series doesn't need to be sorted and the resulting
 		/// series will not be sorted either.  This method is suitable for series with small number of items.  The time complexity is always O(n).
@@ -17,7 +21,6 @@ namespace Albatross.Collections.Intervals {
 		/// <exception cref="ArgumentException"></exception>
 		public static IEnumerable<T> Insert<T, K>(this IEnumerable<T> series, T src, Func<T, T, bool> isEqual, Func<T, T> clone)
 			where T : IClosedInterval<K> where K : IComparable<K> {
-
 			if (src.StartInclusive.CompareTo(src.EndInclusive) > 0) { throw new ArgumentException("Start date cannot be greater than end date"); }
 			bool isContinuous = false;
 			bool isEmpty = true;
@@ -168,6 +171,7 @@ namespace Albatross.Collections.Intervals {
 				yield return item;
 			}
 		}
+
 		public static IEnumerable<T> TrimEnd<T, K>(this IEnumerable<T> series, K newEnd)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
@@ -180,6 +184,7 @@ namespace Albatross.Collections.Intervals {
 				yield return item;
 			}
 		}
+
 		public static IEnumerable<T> Rebuild<T, K>(this IEnumerable<T> source, Func<T, T, bool> isEqual)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
@@ -218,6 +223,7 @@ namespace Albatross.Collections.Intervals {
 			return source.Where(args => !(start.IsGreaterThan(args.EndInclusive) || end.IsLessThan(args.StartInclusive)));
 			//return source.Where(args => !(start.CompareTo(args.EndInclusive) > 0 || end.CompareTo(args.StartInclusive) < 0));
 		}
+
 		/// <summary>
 		/// Verify that the series is continuous and non-overlapping.
 		/// </summary>
@@ -257,6 +263,39 @@ namespace Albatross.Collections.Intervals {
 				previous = item;
 			}
 			return true;
+		}
+
+		public static IEnumerable<TResult> Join<TLeft, TRight, TResult, TKey>(this IEnumerable<TLeft> leftSeries, IEnumerable<TRight> rightSeries, Func<TLeft, TRight, TResult> convert)
+			where TKey : IComparable<TKey>
+			where TLeft : IClosedInterval<TKey>
+			where TRight : IClosedInterval<TKey>
+			where TResult : IClosedInterval<TKey> {
+			var leftStack = new Stack<TLeft>(leftSeries.OrderByDescending(x => x.StartInclusive));
+			var rightStack = new Stack<TRight>(rightSeries.OrderByDescending(x => x.StartInclusive));
+			while (leftStack.Count > 0 && rightStack.Count > 0) {
+				var left = leftStack.Pop();
+				var right = rightStack.Pop();
+				if (TryCombine(left, right, out TResult? result)) {
+					yield return result;
+				}
+				var compare = left.EndInclusive.CompareTo(right.EndInclusive);
+				if (compare > 0) {
+					leftStack.Push(left);
+				} else if (compare < 0) {
+					rightStack.Push(right);
+				}
+			}
+
+			bool TryCombine(TLeft left, TRight right, [NotNullWhen(true)] out TResult? result) {
+				if (left.EndInclusive.IsLessThan(right.StartInclusive) || right.EndInclusive.IsLessThan(left.StartInclusive)) {
+					result = default;
+					return false;
+				}
+				result = convert(left, right);
+				result.StartInclusive = left.StartInclusive.IsGreaterThanOrEqualTo(right.StartInclusive) ? left.StartInclusive : right.StartInclusive;
+				result.EndInclusive = left.EndInclusive.IsLessThanOrEqualTo(right.EndInclusive) ? left.EndInclusive : right.EndInclusive;
+				return true;
+			}
 		}
 	}
 }
