@@ -67,7 +67,8 @@ namespace Albatross.Collections.Intervals {
 						item.EndInclusive = T.Previous(src.StartInclusive);
 						yield return item;
 					}
-				} else if (src.EndInclusive.CompareTo(T.Previous(item.StartInclusive)) == 0) {
+				} else if (src.EndInclusive.CompareTo(item.StartInclusive) < 0 && src.EndInclusive.CompareTo(T.Previous(item.StartInclusive)) == 0) {
+					// ^ the first condition above is to make sure that item.StartInclusive is not at min value.  If true, the Previous(item.StartInclusive) will throw an exception
 					isContinuous = true;
 					if (isEqual(src, item)) {
 						item.StartInclusive = src.StartInclusive;
@@ -75,7 +76,8 @@ namespace Albatross.Collections.Intervals {
 					} else {
 						yield return item;
 					}
-				} else if (src.StartInclusive.CompareTo(T.Next(item.EndInclusive)) == 0) {
+				} else if (src.StartInclusive.CompareTo(item.EndInclusive) > 0 && src.StartInclusive.CompareTo(T.Next(item.EndInclusive)) == 0) {
+					// ^ the first condition above is to make sure that item.EndInclusive is not at max value.  If true, the Next(item.EndInclusive) will throw an exception
 					isContinuous = true;
 					if (isEqual(src, item)) {
 						item.EndInclusive = src.EndInclusive;
