@@ -211,6 +211,9 @@ namespace Albatross.Collections.Intervals {
 			}
 		}
 
+		public static T FindRequired<T, K>(this IEnumerable<T> items, K key) where T : IClosedInterval<K> where K : IComparable<K>
+			=> Find<T, K>(items, key) ?? throw new ArgumentException($"Cannot find an interval that overlaps {key}");
+
 		public static T? Find<T, K>(this IEnumerable<T> items, K key) where T : IClosedInterval<K> where K : IComparable<K> {
 			foreach (var item in items) {
 				if (key.IsBetweenInclusive(item.StartInclusive, item.EndInclusive)) {
