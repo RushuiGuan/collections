@@ -1,7 +1,10 @@
-# Packages
+# packages
 Albatross.Collections
 Albatross.Collections.Intervals
 
-# Tests
+# tests
 Albatross.Collections.Test
 Albatross.Collections.Intervals.Test
+
+# apps
+Benchmark.Collections

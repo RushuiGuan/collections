@@ -64,17 +64,6 @@ namespace Albatross.Collections {
 			return item;
 		}
 
-		[Obsolete($"Replaced with {nameof(TryGetOneAndRemove)}")]
-		public static bool TryGetAndRemove<T>(this ICollection<T> list, Func<T, bool> predicate, [NotNullWhen(true)] out T? item) {
-			item = list.FirstOrDefault(predicate);
-			if (item != null) {
-				list.Remove(item);
-				return true;
-			} else {
-				return false;
-			}
-		}
-
 		/// <summary>
 		/// Return true if an item that matches the predicate is found.  If found, the item is removed from the list and returned as an out parameter.
 		/// </summary>
@@ -91,27 +80,7 @@ namespace Albatross.Collections {
 		}
 
 
-		/// <summary>
-		/// Remove items from the existing collection that have the same key as the new items, and then add the new items to the existing collection.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <typeparam name="K"></typeparam>
-		/// <param name="existingItems"></param>
-		/// <param name="newItems"></param>
-		/// <param name="getKey"></param>
-		[Obsolete("An odd method that is hard to understand.  Use AddRange and RemoveAny instead.")]
-		public static void Replace<T, K>(this IList<T> existingItems, IEnumerable<T> newItems, Func<T, K> getKey) {
-			if (newItems.Any()) {
-				var keys = newItems.Select(getKey).ToHashSet();
-				for (int i = existingItems.Count - 1; i >= 0; i--) {
-					var item = existingItems.ElementAt(i);
-					if (keys.Contains(getKey(item))) {
-						existingItems.RemoveAt(i);
-					}
-				}
-				existingItems.AddRange(newItems);
-			}
-		}
+		
 
 		public const int ListItemRemovalAlgoCutoff = 100;
 		/// <summary>

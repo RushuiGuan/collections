@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
 	<PropertyGroup>
-		<Version>7.5.14</Version>
+		<Version>8.0.0</Version>
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<EnableWindowsTargeting>True</EnableWindowsTargeting>
 		<LangVersion>Latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<RepositoryUrl>https://github.com/RushuiGuan/codegen</RepositoryUrl>
+		<RepositoryUrl>https://github.com/RushuiGuan/collections</RepositoryUrl>
 		<RepositoryProjectRoot>$(RepositoryUrl)/tree/main</RepositoryProjectRoot>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

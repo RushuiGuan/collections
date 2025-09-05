@@ -25,12 +25,6 @@ A comprehensive .NET library providing extension methods and data structures for
 - **Flexible Handlers**: Support for matched, left join, and right join scenarios
 - **Key-based Merging**: Join collections based on custom key selectors
 
-### Sorted Data Structures
-- **ISortedData Interface**: Contract for sorted data with position tracking
-- **SortedArrayData**: High-performance implementation for sorted arrays
-- **Async Operations**: Support for replace, prepend, and append operations
-- **Position Management**: Efficient navigation through sorted datasets
-
 ## Prerequisites
 
 - **.NET SDK**: 8.0 or later (for development and testing)
@@ -155,22 +149,6 @@ oldItems.Merge(newItems,
     });
 ```
 
-### Working with Sorted Data
-
-```csharp
-using Albatross.Collections;
-
-var data = new[] { 1, 3, 5, 7, 9 };
-var sortedData = new SortedArrayData<int, int>(data, x => x);
-
-// Navigate through sorted data
-sortedData.ResetPosition();
-while (sortedData.TryReadNexKey(out int key, out IPosition position))
-{
-    Console.WriteLine($"Key: {key}");
-}
-```
-
 ## Project Structure
 
 ```
@@ -179,9 +157,6 @@ collections/
 │   ├── Extensions.cs                   # Core collection extensions
 │   ├── SearchExtensions.cs             # Binary search operations
 │   ├── MergeExtensions.cs              # Collection merging utilities
-│   ├── ISortedData.cs                  # Sorted data contracts
-│   ├── SortedArrayData.cs              # Sorted data implementation
-│   ├── SortedDataExtensions.cs         # Additional sorted data utilities
 │   └── Albatross.Collections.csproj    # Project file
 ├── Albatross.Collections.Test/         # Unit tests
 │   ├── TestExtensions.cs               # Extension method tests
