@@ -81,12 +81,13 @@ var intervals = new List<DateInterval<string>>();
 
 // Insert intervals - automatically maintains continuity
 intervals = intervals.Insert(
-    new DateInterval<string>(new DateOnly(2023, 1, 1), new DateOnly(2023, 1, 31), "January Data"), 
+    new DateInterval<string>(new DateOnly(2023, 1, 1), new DateOnly(9999, 12, 31), "January Data"), 
     x => x
 ).ToList();
 
+// second insert will set the end of the first interval to Jan 31, 2023
 intervals = intervals.Insert(
-    new DateInterval<string>(new DateOnly(2023, 2, 1), new DateOnly(2023, 2, 28), "February Data"), 
+    new DateInterval<string>(new DateOnly(2023, 2, 1), new DateOnly(9999, 2, 28), "February Data"), 
     x => x
 ).ToList();
 
@@ -110,12 +111,14 @@ using Albatross.Collections.Intervals;
 var intervals = new List<IntInterval<decimal>>();
 
 // Insert base interval
+// This will create an interval from 1 to 100 with value 10.5m
 intervals = intervals.Insert(
     new IntInterval<decimal>(1, 100, 10.5m), 
     x => x
 ).ToList();
 
 // Update values in a specific range (automatically splits intervals)
+// change the value from 1 to 50 to 25.0m
 intervals.Update(
     interval => interval.Value = 25.0m,  // Modification action
     1, 50,                               // Range to update
@@ -134,12 +137,10 @@ using Albatross.Collections.Intervals;
 var intervals = new List<DateInterval<int>>();
 
 // Create sample data
-intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-01-01"), DateOnly.Parse("2023-01-31"), 100), x => x).ToList();
-intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-02-01"), DateOnly.Parse("2023-02-28"), 100), x => x).ToList();
-intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-03-01"), DateOnly.Parse("2023-03-31"), 200), x => x).ToList();
-
-// Rebuild to consolidate adjacent intervals with same values
-var consolidated = intervals.Rebuild((a, b) => a.Value == b.Value).ToList();
+// the insert operation automatically combine the first two intervals since they have the same value
+intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-01-01"), DateOnly.Parse("9999-12-31"), 100), x => x).ToList();
+intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-02-01"), DateOnly.Parse("9999-12-31"), 100), x => x).ToList();
+intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-03-01"), DateOnly.Parse("9999-12-31"), 200), x => x).ToList();
 
 // Trim operations
 var trimmed = intervals.TrimStart(DateOnly.Parse("2023-01-15")).ToList();
@@ -153,6 +154,9 @@ var joined = series1.Join<DateInterval<string>, DateInterval<int>, DateInterval<
     series2, 
     (left, right) => new DateInterval<string>(left.StartInclusive, left.EndInclusive, $"{left.Value}+{right.Value}")
 );
+
+// Rebuild to consolidate adjacent intervals with same values
+var consolidated = intervals.Rebuild((a, b) => a.Value == b.Value).ToList();
 ```
 
 ## Project Structure
