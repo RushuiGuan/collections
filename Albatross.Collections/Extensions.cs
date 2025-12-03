@@ -19,7 +19,9 @@ namespace Albatross.Collections {
 				}
 			}
 			if (index != 0) {
-				yield return array[0..index];
+				var copy = new T[index];
+				Array.Copy(array, copy, index);
+				yield return copy;
 			}
 		}
 
