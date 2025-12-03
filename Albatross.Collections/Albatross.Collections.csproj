@@ -22,6 +22,6 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="Albatross.CodeAnalysis.NetStandard2Helper" Version="8.0.0-38.main" />
+		<PackageReference Include="Albatross.CodeAnalysis.NetStandard2Helper" Version="8.0.0-38.main" />
 	</ItemGroup>
 </Project>
