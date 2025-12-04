@@ -157,6 +157,15 @@ namespace Albatross.Collections {
 			}
 			return collection;
 		}
+		public static ICollection<T> UnionAll<T>(this T first, params T[] items) {
+			var list = new List<T>{
+				first
+			};
+			foreach (var item in items) {
+				collection.Add(item);
+			}
+			return collection;
+		}
 		public static T? Where<K, T>(this IDictionary<K, T> dict, K key, Func<T, bool>? predicate = null) where T : class {
 			if (dict.TryGetValue(key, out var value)) {
 				if (predicate == null || predicate(value)) {
