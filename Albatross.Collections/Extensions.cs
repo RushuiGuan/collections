@@ -145,18 +145,6 @@ namespace Albatross.Collections {
 			}
 			return collection;
 		}
-		public static ICollection<T> AddIf<T>(this ICollection<T> collection, bool condition, T item){
-			if(condition){
-				collection.Add(item);
-			}
-			return collection;
-		}
-		public static ICollection<T> AddIf<T>(this ICollection<T> collection, Func<bool> condition, Func<T> func){
-			if(condition()){
-				collection.Add(func());
-			}
-			return collection;
-		}
 		public static ICollection<T> UnionAll<T>(this ICollection<T> collection, params IEnumerable<T>[] items) {
 			foreach (var item in items) {
 				collection.AddRange(item);
