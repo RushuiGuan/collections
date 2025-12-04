@@ -150,7 +150,7 @@ namespace Albatross.Collections {
 			return first.Concat(second.Where(x => x is not null))!;
 		}
 
-		public static IEnumerable<T> UnionIfNotNull<T>(this IEnumerable<T> first, params IEnumerable<T?> second) where T : struct {
+		public static IEnumerable<T> UnionIfNotNull<T>(this IEnumerable<T> first, params IEnumerable<Nullable<T>> second) where T : struct {
 			return first.Concat(second.Where(x => x is not null).Select(x => x!.Value));
 		}
 
