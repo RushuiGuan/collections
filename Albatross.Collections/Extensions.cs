@@ -82,7 +82,7 @@ namespace Albatross.Collections {
 		}
 
 
-		
+
 
 		public const int ListItemRemovalAlgoCutoff = 100;
 		/// <summary>
@@ -145,7 +145,15 @@ namespace Albatross.Collections {
 			}
 			return collection;
 		}
-		
+
+		public static IEnumerable<T> UnionIfNotNull<T>(this IEnumerable<T> first, params IEnumerable<T?> second) where T : class {
+			return first.Concat(second.Where(x => x is not null))!;
+		}
+
+		public static IEnumerable<T> UnionIfNotNull<T>(this IEnumerable<T> first, params IEnumerable<T?> second) where T : struct {
+			return first.Concat(second.Where(x => x is not null).Select(x => x!.Value));
+		}
+
 		public static IEnumerable<T> AsEnumerable<T>(this T item) {
 			yield return item;
 		}
