@@ -157,6 +157,12 @@ namespace Albatross.Collections {
 			}
 			return collection;
 		}
+		public static ICollection<T> UnionAll<T>(this ICollection<T> collection, params IEnumerable<T>[] items) {
+			foreach (var item in items) {
+				collection.AddRange(item);
+			}
+			return collection;
+		}
 		public static ICollection<T> UnionAll<T>(this ICollection<T> collection, params T[] items) {
 			foreach (var item in items) {
 				collection.Add(item);
