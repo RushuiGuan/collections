@@ -151,14 +151,14 @@ namespace Albatross.Collections {
 			}
 			return collection;
 		}
-		public static ICollection<T> UnionAll<T>(this ICollection<T> collection, params T[] items) {
+		public static ICollection<T> UnionAll<T>(this ICollection<T> collection, params IEnumerable<T> items) {
 			foreach (var item in items) {
 				collection.Add(item);
 			}
 			return collection;
 		}
-		public static ICollection<T> UnionAll<T>(this T first, params T[] items) {
-			var list = new List<T>{
+		public static ICollection<T> UnionAll<T>(this T first, params IEnumerable<T> items) {
+			var collection = new List<T>{
 				first
 			};
 			foreach (var item in items) {
