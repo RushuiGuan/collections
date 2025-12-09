@@ -1,5 +1,6 @@
 using Microsoft.VisualBasic;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 
 namespace Albatross.Collections.Intervals {
 	public static class ClosedIntervalExtensions {
@@ -204,6 +205,32 @@ namespace Albatross.Collections.Intervals {
 						yield return result;
 						current = item;
 					}
+				}
+			}
+			if (current != null) {
+				yield return current;
+			}
+		}
+
+		// Merge intervals assuming they all represent the same value. Adjacent or overlapping intervals will be merged.
+		public static IEnumerable<T> Merge<T, K>(this IEnumerable<T> source)
+			where T : IClosedInterval<K>
+			where K : IComparable<K> {
+
+			T? current = default;
+			foreach (var item in source.OrderBy(x => x.StartInclusive)) {
+				if (current == null) {
+					current = item;
+				} else if (item.EndInclusive.CompareTo(current.EndInclusive) <= 0) {
+					// item is completely within current,
+					continue;
+				} else if (item.StartInclusive.CompareTo(T.Next(current.EndInclusive)) <= 0) {
+					// the item overlaps current
+					current.EndInclusive = item.EndInclusive;
+					continue;
+				} else {
+					yield return current;
+					current = item;
 				}
 			}
 			if (current != null) {
