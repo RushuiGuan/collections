@@ -1,6 +1,7 @@
 ﻿using Albatross.Collections;
 using Albatross.CommandLine;
-using Albatross.Text;
+using Albatross.Text.CliFormat;
+using Albatross.Text.Table;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,9 @@ namespace Benchmark.Collections {
 
 		[Option("c", Description = "How many times the test will be run, default is 100")]
 		public int? Count { get; set; }
+
+		[Option("f", Description = "The format string used to format numbers in the report output")]
+		public string? Format { get; set; }
 	}
 
 	public class MeasureListItemRemoval : ICommandHandler {
@@ -99,13 +103,18 @@ namespace Benchmark.Collections {
 				RunTest(list, i + warmUpIndex);
 			}
 
-			var options = new PrintOptionBuilder<PrintTableOption>()
-				.Property("TestName", "Parameter", "Count", "AverageDuration", "AverageTicks")
-				.Format("Count", "#,#0")
-				.Format("AverageDuration", "#,#0")
-				.Format("AverageTicks", "#,#0")
-				.Build();
-			await Console.Out.PrintTable(list.BuildReports().ToArray(), options);
+			//var options = new Albatross.Text.Table.TableOptions<Report>()
+			//	.SetColumn(x=>x.TestName)
+			//	.SetColumn(x=>x.Parameter)
+			//	.SetColumn(x=>x.Count)
+			//	.SetColumn(x=>x.AverageDuration)
+			//	.SetColumn(x=>x.AverageTicks)
+			//	.Format(x=>x.Count, "#,#0")
+			//	.Format(x=>x.AverageDuration, "#,#0")
+			//	.Format(x=>x.AverageTicks, "#,#0")
+			//	.Build();
+
+			Console.Out.CliPrint(list.BuildReports(), options.Format);
 			return 0;
 		}
 	}
