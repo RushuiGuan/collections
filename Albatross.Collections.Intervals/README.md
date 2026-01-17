@@ -1,278 +1,126 @@
 # Albatross.Collections.Intervals
 
-A comprehensive .NET library for managing continuous and non-overlapping intervals. This library provides efficient data structures and algorithms for working with interval-based data, where keys are ranges instead of single values. It's particularly useful for time-series data, date ranges, and any scenario where you need to efficiently store and query data that spans intervals.
-
-## Features
-
-### Core Interval Types
-- **Closed Intervals**: Intervals with inclusive start and end points (`IClosedInterval<K>`, `IClosedInterval<K,V>`)
-- **Open Intervals**: Intervals with exclusive start and end points (`IOpenInterval<T>`)
-- **Mixed Intervals**: Open-closed interval combinations for flexible boundary handling
-
-### Built-in Implementations
-- **IntInterval**: Integer-based intervals with value support (`IntInterval<V>`)
-- **DateInterval**: Date-based intervals using `DateOnly` (`DateInterval<V>`)
-- **Custom Types**: Extensible interface for any comparable type
-
-### Advanced Operations
-- **Insert**: Add new intervals while maintaining continuity and non-overlap
-- **Update**: Modify values within specified ranges with automatic splitting
-- **Find**: Efficient lookup of intervals containing specific values or ranges
-- **Join**: Combine multiple interval series with flexible join logic
-- **Trim**: Adjust interval boundaries (start/end trimming)
-- **Rebuild**: Consolidate adjacent intervals with identical values
-- **Verify**: Validate interval continuity and detect overlaps
-
-### Key Benefits
-- **Continuous Series**: Automatic maintenance of gap-free interval sequences
-- **Non-overlapping**: Built-in prevention of interval conflicts
-- **Efficient Storage**: Optimal for data with repeated values across ranges
-- **Time-series Support**: Perfect for tracking changes over time
-- **Type Safety**: Strongly-typed generic interfaces for compile-time validation
-
-## Prerequisites
-
-- **.NET SDK**: 8.0 or later (for development and testing)
-- **Runtime Compatibility**: .NET 8.0+
-- **Dependencies**: No external runtime dependencies
+A .NET library for managing continuous, non-overlapping intervals. Useful for time-series data, date ranges, and scenarios where data spans ranges rather than single values.
 
 ## Installation
 
-### Package Manager Console
-```powershell
-Install-Package Albatross.Collections.Intervals
-```
-
-### .NET CLI
 ```bash
 dotnet add package Albatross.Collections.Intervals
 ```
 
-### PackageReference
-```xml
-<PackageReference Include="Albatross.Collections.Intervals" Version="7.5.14" />
-```
+## Quick Start
 
-### Development Setup
-```bash
-# Clone the repository
-git clone https://github.com/RushuiGuan/collections.git
-cd collections
-
-# Restore dependencies
-dotnet restore
-
-# Build the project
-dotnet build Albatross.Collections.Intervals/Albatross.Collections.Intervals.csproj
-
-# Run tests
-dotnet test Albatross.Collections.Intervals.Test/Albatross.Collections.Intervals.Test.csproj
-```
-
-## Example Usage
-
-### Basic Date Intervals
-
+### Date Intervals
 ```csharp
 using Albatross.Collections.Intervals;
 
-// Create date intervals with values
 var intervals = new List<DateInterval<string>>();
 
-// Insert intervals - automatically maintains continuity
+// Insert creates continuous series - gaps are not allowed
 intervals = intervals.Insert(
-    new DateInterval<string>(new DateOnly(2023, 1, 1), new DateOnly(9999, 12, 31), "January Data"), 
+    new DateInterval<string>(new DateOnly(2023, 1, 1), new DateOnly(9999, 12, 31), "Initial"),
     x => x
 ).ToList();
 
-// second insert will set the end of the first interval to Jan 31, 2023
+// Second insert adjusts the first interval's end date automatically
 intervals = intervals.Insert(
-    new DateInterval<string>(new DateOnly(2023, 2, 1), new DateOnly(9999, 2, 28), "February Data"), 
+    new DateInterval<string>(new DateOnly(2023, 2, 1), new DateOnly(9999, 12, 31), "February"),
     x => x
 ).ToList();
 
-// Find intervals containing a specific date
+// Find by point
 var result = intervals.Find(new DateOnly(2023, 1, 15));
-Console.WriteLine(result?.Value); // Output: "January Data"
+Console.WriteLine(result?.Value); // "Initial"
 
-// Find all intervals overlapping a range
-var rangeResults = intervals.Find(
-    new DateOnly(2023, 1, 20), 
-    new DateOnly(2023, 2, 10)
+// Find by range
+var rangeResults = intervals.Find(new DateOnly(2023, 1, 20), new DateOnly(2023, 2, 10));
+```
+
+### Integer Intervals with Update
+```csharp
+var intervals = new List<IntInterval<decimal>>();
+
+// Create base interval
+intervals = intervals.Insert(new IntInterval<decimal>(1, 100, 10.0m), x => x).ToList();
+
+// Update splits intervals automatically
+intervals.Update(
+    item => item.Value = 25.0m,  // modification
+    x => x,                       // clone function
+    20, 50                        // range to update
+);
+// Result: [1-19: 10.0], [20-50: 25.0], [51-100: 10.0]
+```
+
+### Merging Adjacent Intervals
+```csharp
+var intervals = new List<IntInterval<int>> {
+    new(1, 10, 100),
+    new(11, 20, 100),  // same value, adjacent
+    new(21, 30, 200)
+};
+
+// Rebuild consolidates adjacent intervals with equal values
+var consolidated = intervals.Rebuild((a, b) => a.Value == b.Value).ToList();
+// Result: [1-20: 100], [21-30: 200]
+```
+
+### Join Two Series
+```csharp
+var prices = new List<DateInterval<decimal>> { /* price history */ };
+var quantities = new List<DateInterval<int>> { /* quantity history */ };
+
+var combined = prices.Join<DateInterval<decimal>, DateInterval<int>, DateInterval<decimal>, DateOnly>(
+    quantities,
+    (price, qty) => new DateInterval<decimal>(default, default, price.Value * qty.Value)
 );
 ```
 
-### Integer Intervals with Updates
-
+### Validation
 ```csharp
-using Albatross.Collections.Intervals;
-
-// Create integer intervals
-var intervals = new List<IntInterval<decimal>>();
-
-// Insert base interval
-// This will create an interval from 1 to 100 with value 10.5m
-intervals = intervals.Insert(
-    new IntInterval<decimal>(1, 100, 10.5m), 
-    x => x
-).ToList();
-
-// Update values in a specific range (automatically splits intervals)
-// change the value from 1 to 50 to 25.0m
-intervals.Update(
-    interval => interval.Value = 25.0m,  // Modification action
-    1, 50,                               // Range to update
-    x => x                               // Clone function
-);
-
-// Verify continuity and non-overlap
+// Verify series is continuous and non-overlapping
 bool isValid = intervals.Verify(throwException: false);
 ```
 
-### Advanced Operations
+## API Reference
+
+| Method | Description |
+|--------|-------------|
+| `Insert<T,K>(item, clone)` | Add interval maintaining continuity, auto-merges equal adjacent values |
+| `Update<T,K>(modify, clone, start, end)` | Update values in range, auto-splits intervals |
+| `Find<T,K>(key)` | Find interval containing point |
+| `Find<T,K>(start, end)` | Find all intervals overlapping range |
+| `FindRequired<T,K>(key)` | Find or throw if not found |
+| `TrimStart<T,K>(newStart)` | Remove data before new start |
+| `TrimEnd<T,K>(newEnd)` | Remove data after new end |
+| `Rebuild<T,K>(isEqual)` | Consolidate adjacent intervals with matching values |
+| `Merge<T,K>()` | Merge overlapping/adjacent intervals |
+| `Join<TLeft,TRight,TResult,TKey>(...)` | Combine two interval series |
+| `Verify<T,K>(throwException)` | Validate continuity and non-overlap |
+| `IsValid<T>()` | Check if interval start <= end |
+
+## Built-in Types
+
+| Type | Key Type | Description |
+|------|----------|-------------|
+| `DateInterval<V>` | `DateOnly` | Date-based intervals |
+| `IntInterval<V>` | `int` | Integer-based intervals |
+
+## Custom Interval Types
+
+Implement `IClosedInterval<K>` or `IClosedInterval<K,V>`:
 
 ```csharp
-using Albatross.Collections.Intervals;
+public class MyInterval : IClosedInterval<int, string> {
+    public int StartInclusive { get; set; }
+    public int EndInclusive { get; set; }
+    public string Value { get; set; }
 
-var intervals = new List<DateInterval<int>>();
-
-// Create sample data
-// the insert operation automatically combine the first two intervals since they have the same value
-intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-01-01"), DateOnly.Parse("9999-12-31"), 100), x => x).ToList();
-intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-02-01"), DateOnly.Parse("9999-12-31"), 100), x => x).ToList();
-intervals = intervals.Insert(new DateInterval<int>(DateOnly.Parse("2023-03-01"), DateOnly.Parse("9999-12-31"), 200), x => x).ToList();
-
-// Trim operations
-var trimmed = intervals.TrimStart(DateOnly.Parse("2023-01-15")).ToList();
-var endTrimmed = intervals.TrimEnd(DateOnly.Parse("2023-02-15")).ToList();
-
-// Join two interval series
-var series1 = new List<DateInterval<string>> { /* ... */ };
-var series2 = new List<DateInterval<int>> { /* ... */ };
-
-var joined = series1.Join<DateInterval<string>, DateInterval<int>, DateInterval<string>, DateOnly>(
-    series2, 
-    (left, right) => new DateInterval<string>(left.StartInclusive, left.EndInclusive, $"{left.Value}+{right.Value}")
-);
-
-// Rebuild to consolidate adjacent intervals with same values
-var consolidated = intervals.Rebuild((a, b) => a.Value == b.Value).ToList();
+    public static int Next(int value) => value + 1;
+    public static int Previous(int value) => value - 1;
+}
 ```
-
-## Project Structure
-
-```
-Albatross.Collections.Intervals/
-├── Albatross.Collections.Intervals.csproj  # Project file
-├── README.md                               # This file
-├── ClosedInterval.cs                       # Core interval interfaces
-├── ClosedIntervalExtensions.cs             # Extension methods for closed intervals
-├── IntInterval.cs                          # Integer interval implementation
-├── DateInterval.cs                         # Date interval implementation
-├── OpenInterval.cs                         # Open interval interfaces
-├── OpenClosedInterval.cs                   # Mixed interval types
-├── IntervalException.cs                    # Custom exceptions
-├── ComparableExtensions.cs                 # Utility extensions
-└── ICloneable.cs                          # Cloning interface
-
-Albatross.Collections.Intervals.Test/       # Unit tests
-├── TestInsertClosedIntervals.cs            # Insert operation tests
-├── TestUpdateCloseIntervals.cs             # Update operation tests
-├── TestClosedIntervalExtentions.cs         # Extension method tests
-├── CloseIntervalUpdateStressTester.cs      # Stress testing utilities
-├── InsertClosedIntervals_StressTest.cs     # Insert stress tests
-├── DateLevelTestRunner.cs                  # Date-specific test utilities
-└── [Additional test files...]              # Comprehensive test coverage
-```
-
-## Running Unit Tests
-
-The project includes comprehensive test coverage with 86+ unit tests covering all major functionality.
-
-### Run All Tests
-```bash
-dotnet test Albatross.Collections.Intervals.Test/Albatross.Collections.Intervals.Test.csproj
-```
-
-### Run Tests with Detailed Output
-```bash
-dotnet test Albatross.Collections.Intervals.Test/Albatross.Collections.Intervals.Test.csproj --verbosity normal
-```
-
-### Run Specific Test Class
-```bash
-dotnet test --filter "TestInsertClosedIntervals"
-```
-
-### Test Coverage
-The test suite covers:
-- Interval insertion with continuity validation
-- Update operations with automatic splitting
-- Find operations for point and range queries
-- Join operations between different interval series
-- Trim operations for boundary adjustments
-- Rebuild operations for consolidation
-- Edge cases and error conditions
-- Stress testing with large datasets
-
-## Contributing
-
-We welcome contributions! Please follow these guidelines:
-
-### Getting Started
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add or update tests as needed
-5. Ensure all tests pass (`dotnet test`)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
-
-### Code Style
-- Use meaningful variable and method names
-- Add XML documentation for public APIs
-- Keep methods focused and single-purpose
-- Follow .NET naming conventions
-- Maintain backward compatibility when possible
-
-### Testing Requirements
-- Add unit tests for new functionality
-- Ensure existing tests continue to pass
-- Include edge case testing
-- Use FluentAssertions for test assertions
-- Follow existing test patterns and naming
-
-### Pull Request Process
-- Provide clear description of changes
-- Reference any related issues
-- Ensure CI/CD checks pass
-- Request review from maintainers
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
-
-```
-MIT License
-
-Copyright (c) 2019 Rushui Guan
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+MIT License - see [LICENSE](../LICENSE)

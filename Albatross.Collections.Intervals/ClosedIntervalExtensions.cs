@@ -1,25 +1,34 @@
-using Microsoft.VisualBasic;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 
 namespace Albatross.Collections.Intervals {
+	/// <summary>
+	/// Provides extension methods for managing continuous, non-overlapping interval series.
+	/// All operations maintain the invariants that intervals are continuous (no gaps) and non-overlapping.
+	/// </summary>
 	public static class ClosedIntervalExtensions {
+		/// <summary>
+		/// Determines whether the interval is valid (start &lt;= end).
+		/// </summary>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <param name="interval">The interval to validate.</param>
+		/// <returns>True if start is less than or equal to end; otherwise, false.</returns>
 		public static bool IsValid<T>(this IClosedInterval<T> interval) where T : IComparable<T> {
 			return interval.StartInclusive.CompareTo(interval.EndInclusive) <= 0;
 		}
 
 		/// <summary>
-		/// Use the method to create a continuous series of non overlapping interval data.  The input series doesn't need to be sorted and the resulting
-		/// series will not be sorted either.  This method is suitable for series with small number of items.  The time complexity is always O(n).
+		/// Inserts an interval into a series while maintaining continuity and non-overlap.
+		/// Adjacent intervals with equal values (as determined by <paramref name="isEqual"/>) are automatically merged.
+		/// The input series doesn't need to be sorted. Time complexity is O(n).
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <typeparam name="K"></typeparam>
-		/// <param name="series"></param>
-		/// <param name="src"></param>
-		/// <param name="isEqual"></param>
-		/// <param name="clone"></param>
-		/// <returns></returns>
-		/// <exception cref="ArgumentException"></exception>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="series">The existing interval series.</param>
+		/// <param name="src">The interval to insert.</param>
+		/// <param name="isEqual">Function to determine if two intervals have equal values and should be merged.</param>
+		/// <param name="clone">Function to create a copy of an interval when splitting is required.</param>
+		/// <returns>The updated interval series.</returns>
+		/// <exception cref="ArgumentException">Thrown when the insertion would break series continuity or when start &gt; end.</exception>
 		public static IEnumerable<T> Insert<T, K>(this IEnumerable<T> series, T src, Func<T, T, bool> isEqual, Func<T, T> clone)
 			where T : IClosedInterval<K> where K : IComparable<K> {
 			if (src.StartInclusive.CompareTo(src.EndInclusive) > 0) { throw new ArgumentException("Start date cannot be greater than end date"); }
@@ -98,19 +107,17 @@ namespace Albatross.Collections.Intervals {
 		}
 
 		/// <summary>
-		/// This function will attempt to update date level values between <paramref name="start"/> and <paramref name="endDate"/>.  If the endDate is not specified, 
-		/// the function will find the next record in the series and set the end date to the day before its start date.  If the next record does not exist, the end date 
-		/// will be set to the max end date. The function will update only.  It will not insert records if no existing records that overlap the specified date range 
-		/// are found.
+		/// Updates interval values within a specified range, automatically splitting intervals as needed.
+		/// Only existing intervals overlapping the range are modified; no new intervals are created if the range has no overlap.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <typeparam name="K"></typeparam>
-		/// <param name="series"></param>
-		/// <param name="clone">function pointer to clone an instance of T</param>
-		/// <param name="modify">action pointer to modify the value</param>
-		/// <param name="start"></param>
-		/// <param name="endDate"></param>
-		/// <exception cref="ArgumentException"></exception>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="series">The interval series to update.</param>
+		/// <param name="modify">Action to apply to modify interval values within the range.</param>
+		/// <param name="clone">Function to create a copy of an interval when splitting is required.</param>
+		/// <param name="start">The start of the update range (inclusive).</param>
+		/// <param name="end">The end of the update range (inclusive).</param>
+		/// <exception cref="ArgumentException">Thrown when start &gt; end.</exception>
 		public static void Update<T, K>(this ICollection<T> series, Action<T> modify, Func<T, T> clone, K start, K end)
 			where T : IClosedInterval<K> where K : IComparable<K> {
 			if (start.CompareTo(end) > 0) {
@@ -156,12 +163,14 @@ namespace Albatross.Collections.Intervals {
 		}
 
 		/// <summary>
-		/// Provided a date level series data for a single entity, the method will set the start date of the series to the new start date by trimming
-		/// the any data prior to the new start date.  The method assume that the series is correctly built.
+		/// Trims intervals to start at a new start boundary, removing any data before the new start.
+		/// Intervals entirely before the new start are removed; intervals spanning the boundary are adjusted.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="series"></param>
-		/// <param name="newStart"></param>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="series">The interval series to trim.</param>
+		/// <param name="newStart">The new start boundary.</param>
+		/// <returns>The trimmed interval series.</returns>
 		public static IEnumerable<T> TrimStart<T, K>(this IEnumerable<T> series, K newStart)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
@@ -175,6 +184,15 @@ namespace Albatross.Collections.Intervals {
 			}
 		}
 
+		/// <summary>
+		/// Trims intervals to end at a new end boundary, removing any data after the new end.
+		/// Intervals entirely after the new end are removed; intervals spanning the boundary are adjusted.
+		/// </summary>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="series">The interval series to trim.</param>
+		/// <param name="newEnd">The new end boundary.</param>
+		/// <returns>The trimmed interval series.</returns>
 		public static IEnumerable<T> TrimEnd<T, K>(this IEnumerable<T> series, K newEnd)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
@@ -188,6 +206,15 @@ namespace Albatross.Collections.Intervals {
 			}
 		}
 
+		/// <summary>
+		/// Consolidates adjacent intervals with matching values into single intervals.
+		/// The series is sorted by start before processing. Adjacent intervals where <paramref name="isEqual"/> returns true are merged.
+		/// </summary>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="source">The interval series to rebuild.</param>
+		/// <param name="isEqual">Function to determine if two intervals have equal values and should be merged.</param>
+		/// <returns>The consolidated interval series.</returns>
 		public static IEnumerable<T> Rebuild<T, K>(this IEnumerable<T> source, Func<T, T, bool> isEqual)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
@@ -212,7 +239,14 @@ namespace Albatross.Collections.Intervals {
 			}
 		}
 
-		// Merge intervals assuming they all represent the same value. Adjacent or overlapping intervals will be merged.
+		/// <summary>
+		/// Merges overlapping or adjacent intervals in the series, assuming all intervals represent the same logical value.
+		/// The series is sorted by start before processing.
+		/// </summary>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="source">The interval series to merge.</param>
+		/// <returns>The merged interval series with no overlaps.</returns>
 		public static IEnumerable<T> Merge<T, K>(this IEnumerable<T> source)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
@@ -238,9 +272,26 @@ namespace Albatross.Collections.Intervals {
 			}
 		}
 
+		/// <summary>
+		/// Finds the interval containing the specified key, throwing an exception if not found.
+		/// </summary>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="items">The interval series to search.</param>
+		/// <param name="key">The key to find.</param>
+		/// <returns>The interval containing the key.</returns>
+		/// <exception cref="ArgumentException">Thrown when no interval contains the key.</exception>
 		public static T FindRequired<T, K>(this IEnumerable<T> items, K key) where T : IClosedInterval<K> where K : IComparable<K>
 			=> Find<T, K>(items, key) ?? throw new ArgumentException($"Cannot find an interval that overlaps {key}");
 
+		/// <summary>
+		/// Finds the interval containing the specified key, or null if not found.
+		/// </summary>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="items">The interval series to search.</param>
+		/// <param name="key">The key to find.</param>
+		/// <returns>The interval containing the key, or null if not found.</returns>
 		public static T? Find<T, K>(this IEnumerable<T> items, K key) where T : IClosedInterval<K> where K : IComparable<K> {
 			foreach (var item in items) {
 				if (key.IsBetweenInclusive(item.StartInclusive, item.EndInclusive)) {
@@ -250,21 +301,29 @@ namespace Albatross.Collections.Intervals {
 			return default;
 		}
 
+		/// <summary>
+		/// Finds all intervals that overlap with the specified range [start, end].
+		/// </summary>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="source">The interval series to search.</param>
+		/// <param name="start">The start of the search range (inclusive).</param>
+		/// <param name="end">The end of the search range (inclusive).</param>
+		/// <returns>All intervals that overlap with the specified range.</returns>
 		public static IEnumerable<T> Find<T, K>(this IEnumerable<T> source, K start, K end)
 			where T : IClosedInterval<K> where K : IComparable<K> {
 			return source.Where(args => !(start.IsGreaterThan(args.EndInclusive) || end.IsLessThan(args.StartInclusive)));
-			//return source.Where(args => !(start.CompareTo(args.EndInclusive) > 0 || end.CompareTo(args.StartInclusive) < 0));
 		}
 
 		/// <summary>
-		/// Verify that the series is continuous and non-overlapping.
+		/// Verifies that the interval series is continuous (no gaps) and non-overlapping.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <typeparam name="K"></typeparam>
-		/// <param name="series"></param>
-		/// <param name="throwException"></param>
-		/// <returns></returns>
-		/// <exception cref="IntervalException"></exception>
+		/// <typeparam name="T">The interval type.</typeparam>
+		/// <typeparam name="K">The type of interval boundaries.</typeparam>
+		/// <param name="series">The interval series to verify.</param>
+		/// <param name="throwException">If true, throws <see cref="IntervalException"/> on failure; otherwise, returns false.</param>
+		/// <returns>True if the series is valid; false if invalid and <paramref name="throwException"/> is false.</returns>
+		/// <exception cref="IntervalException">Thrown when the series is invalid and <paramref name="throwException"/> is true.</exception>
 		public static bool Verify<T, K>(this IEnumerable<T> series, bool throwException)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {
@@ -297,6 +356,18 @@ namespace Albatross.Collections.Intervals {
 			return true;
 		}
 
+		/// <summary>
+		/// Joins two interval series, creating new intervals where they overlap.
+		/// Both series should be continuous. The result contains intervals for each overlapping region.
+		/// </summary>
+		/// <typeparam name="TLeft">The type of intervals in the left series.</typeparam>
+		/// <typeparam name="TRight">The type of intervals in the right series.</typeparam>
+		/// <typeparam name="TResult">The type of intervals in the result.</typeparam>
+		/// <typeparam name="TKey">The type of interval boundaries.</typeparam>
+		/// <param name="leftSeries">The left interval series.</param>
+		/// <param name="rightSeries">The right interval series.</param>
+		/// <param name="convert">Function to create a result interval from overlapping left and right intervals.</param>
+		/// <returns>A series of intervals representing the joined regions.</returns>
 		public static IEnumerable<TResult> Join<TLeft, TRight, TResult, TKey>(this IEnumerable<TLeft> leftSeries, IEnumerable<TRight> rightSeries, Func<TLeft, TRight, TResult> convert)
 			where TKey : IComparable<TKey>
 			where TLeft : IClosedInterval<TKey>
