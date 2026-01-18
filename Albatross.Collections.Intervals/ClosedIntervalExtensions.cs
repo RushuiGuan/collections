@@ -240,13 +240,14 @@ namespace Albatross.Collections.Intervals {
 		}
 
 		/// <summary>
-		/// Merges overlapping or adjacent intervals in the series, assuming all intervals represent the same logical value.
-		/// The series is sorted by start before processing.
+		/// Merges overlapping or adjacent intervals into single intervals, assuming all intervals represent the same logical value.
+		/// The input does not need to be continuous and the output will not be continuous if there are gaps.
+		/// Intervals that do not overlap or touch remain separate in the output.
 		/// </summary>
 		/// <typeparam name="T">The interval type.</typeparam>
 		/// <typeparam name="K">The type of interval boundaries.</typeparam>
-		/// <param name="source">The interval series to merge.</param>
-		/// <returns>The merged interval series with no overlaps.</returns>
+		/// <param name="source">The interval series to merge. Does not need to be continuous or sorted.</param>
+		/// <returns>A series of merged intervals. Gaps between non-overlapping intervals are preserved.</returns>
 		public static IEnumerable<T> Merge<T, K>(this IEnumerable<T> source)
 			where T : IClosedInterval<K>
 			where K : IComparable<K> {

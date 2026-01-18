@@ -232,20 +232,20 @@ var consolidated = intervals.Rebuild((a, b) => a.Value == b.Value).ToList();
 
 ## Merge Operations
 
-Merge overlapping or adjacent intervals (assuming same value).
+Merge overlapping or adjacent intervals into single intervals, assuming all intervals represent the same logical value. The input does not need to be continuous, and the output will not be continuous if there are gaps. Intervals that do not overlap or touch remain separate.
 
 ```csharp
 var intervals = new List<IntInterval<int>> {
     new(1, 10, 100),
-    new(5, 15, 100),    // Overlaps with first
-    new(20, 30, 100)    // Gap, not merged
+    new(5, 15, 100),    // Overlaps with first - will be merged
+    new(20, 30, 100)    // Gap from previous - stays separate
 };
 
 var merged = intervals.Merge<IntInterval<int>, int>().ToList();
 
 // Result:
-// [1-15]: 100   (first two merged)
-// [20-30]: 100  (separate)
+// [1-15]: 100   (first two merged due to overlap)
+// [20-30]: 100  (separate - gap preserved)
 ```
 
 ## Join Operations
@@ -365,7 +365,7 @@ intervals = intervals.Insert(
 | `TrimStart<T,K>(newStart)` | Remove data before new start |
 | `TrimEnd<T,K>(newEnd)` | Remove data after new end |
 | `Rebuild<T,K>(isEqual)` | Consolidate adjacent intervals with equal values |
-| `Merge<T,K>()` | Merge overlapping/adjacent intervals |
+| `Merge<T,K>()` | Merge overlapping/adjacent intervals, preserving gaps |
 | `Join<L,R,T,K>(right, convert)` | Combine two interval series |
 | `Verify<T,K>(throwException)` | Validate continuity and non-overlap |
 | `IsValid<T>()` | Check if interval start <= end |
