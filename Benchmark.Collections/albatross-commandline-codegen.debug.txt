@@ -1,0 +1,64 @@
+// ********** MeasureListItemRemovalCommand.cs ********** //
+using System;
+using System.CommandLine;
+using System.IO;
+using System.Threading.Tasks;
+
+#nullable enable
+namespace Benchmark.Collections
+{
+	public sealed partial class MeasureListItemRemovalCommand : Command
+	{
+		public MeasureListItemRemovalCommand() : base("measure-listitem-removal", "Measure the performance of removing items from a list using RemoveAt")
+		{
+			this.Option_ListSize = new Option<int>("--list-size", null)
+			{
+				IsRequired = true
+			};
+			this.AddOption(Option_ListSize);
+			this.Option_AlgoCutoff = new Option<int?>("--algo-cutoff", "Used to determine the list size cut off point to switch from RemoveAny_FromRear to RemoveAny_WithNewList.  Default is 100");
+			Option_AlgoCutoff.AddAlias("-cutoff");
+			this.AddOption(Option_AlgoCutoff);
+			this.Option_Count = new Option<int?>("--count", "How many times the test will be run, default is 100");
+			Option_Count.AddAlias("-c");
+			this.AddOption(Option_Count);
+		}
+
+		public Option<int> Option_ListSize { get; }
+		public Option<int?> Option_AlgoCutoff { get; }
+		public Option<int?> Option_Count { get; }
+	}
+}
+#nullable disable
+
+
+// ********** CodeGenExtensions.cs ********** //
+using Albatross.CommandLine;
+using Benchmark.Collections;
+using Microsoft.Extensions.DependencyInjection;
+using System.CommandLine.Hosting;
+using System.CommandLine.Invocation;
+
+#nullable enable
+namespace Benchmark.Collections
+{
+	public static class CodeGenExtensions
+	{
+		public static IServiceCollection RegisterCommands(this IServiceCollection services)
+		{
+			services.AddKeyedScoped<ICommandHandler, Benchmark.Collections.MeasureListItemRemoval>("measure-listitem-removal");
+			services.AddOptions<MeasureListItemRemovalOptions>().BindCommandLine();
+			return services;
+		}
+
+		public static Setup AddCommands(this Setup setup)
+		{
+			setup.AddCommand<MeasureListItemRemovalCommand>();
+			return setup;
+		}
+	}
+}
+#nullable disable
+
+
+

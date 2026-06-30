@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path=".projects" />
+    <File Path="Directory.Build.props" />
+    <File Path="icon.png" />
+    <File Path="LICENSE" />
+  </Folder>
+  <Project Path="Albatross.Collections.Intervals.Test/Albatross.Collections.Intervals.Test.csproj" />
+  <Project Path="Albatross.Collections.Intervals/Albatross.Collections.Intervals.csproj" />
+  <Project Path="Albatross.Collections.Test/Albatross.Collections.Test.csproj" />
+  <Project Path="Albatross.Collections/Albatross.Collections.csproj" />
+  <Project Path="Benchmark.Collections/Benchmark.Collections.csproj" />
+</Solution>
