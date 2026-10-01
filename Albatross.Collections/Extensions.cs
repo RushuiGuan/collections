@@ -285,5 +285,32 @@ namespace Albatross.Collections {
 				return null;
 			}
 		}
+
+		/// <summary>
+		/// Appends <paramref name="value"/> to the list stored under <paramref name="key"/>, creating and
+		/// registering a new list first if the key is not present.
+		/// </summary>
+		/// <typeparam name="K">The type of the group key.</typeparam>
+		/// <typeparam name="T">The type of the items in each group.</typeparam>
+		/// <param name="dict">Dictionary mapping each group key to its list of items.</param>
+		/// <param name="key">The group to append to.</param>
+		/// <param name="value">The item to append. Duplicates are allowed.</param>
+		/// <returns>The same dictionary, to allow chaining.</returns>
+		/// <remarks>
+		/// Unlike <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/>, this never throws for an existing key.
+		/// <code>
+		/// var groups = new Dictionary&lt;string, List&lt;int&gt;&gt;();
+		/// groups.AddToGroup("odd", 1).AddToGroup("even", 2).AddToGroup("odd", 3);
+		/// // groups["odd"] == [1, 3], groups["even"] == [2]
+		/// </code>
+		/// </remarks>
+		public static IDictionary<K, List<T>> AddToGroup<K, T>(this IDictionary<K, List<T>> dict, K key, T value) {
+			if (!dict.TryGetValue(key, out var list)) {
+				list = new List<T>();
+				dict.Add(key, list);
+			}
+			list.Add(value);
+			return dict;
+		}
 	}
 }
